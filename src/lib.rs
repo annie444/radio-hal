@@ -254,7 +254,7 @@ pub trait Registers<Word> {
 use std::str::FromStr;
 
 #[cfg(feature = "std")]
-fn duration_from_str(s: &str) -> Result<core::time::Duration, humantime::DurationError> {
+pub fn duration_from_str(s: &str) -> Result<core::time::Duration, humantime::DurationError> {
     let d = humantime::Duration::from_str(s)?;
     Ok(*d)
 }
