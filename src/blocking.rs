@@ -14,11 +14,11 @@ use embedded_hal::delay::DelayNs;
 #[cfg(feature = "defmt")]
 use defmt::debug;
 
+#[cfg(all(feature = "log", not(feature = "defmt")))]
+use log::debug;
+
 #[cfg(feature = "clap")]
 use clap::Parser;
-
-#[cfg(feature = "std")]
-use std::string::ToString;
 
 use crate::{Receive, State, Transmit};
 
@@ -70,7 +70,7 @@ impl<E> From<E> for BlockingError<E> {
 ```
 # use radio::*;
 # use radio::mock::*;
-use radio::{BlockingTransmit, BlockingOptions};
+use radio::blocking::{BlockingTransmit, BlockingOptions};
 
 # let mut radio = MockRadio::new(&[
 #    Transaction::start_transmit(vec![0xaa, 0xbb], None),
@@ -144,7 +144,7 @@ where
 ```
 # use radio::*;
 # use radio::mock::*;
-use radio::{BlockingReceive, BlockingOptions};
+use radio::blocking::{BlockingReceive, BlockingOptions};
 
 let data = [0xaa, 0xbb];
 let info = BasicInfo::new(-81, 0);

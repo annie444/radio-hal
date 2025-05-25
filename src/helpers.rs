@@ -11,7 +11,7 @@ use std::time::SystemTime;
 
 use libc::{self};
 
-#[cfg(not(feature = "defmt"))]
+#[cfg(all(not(feature = "defmt"), feature = "log"))]
 use log::{debug, info};
 
 #[cfg(feature = "defmt")]
@@ -22,13 +22,15 @@ use embedded_hal::delay::DelayNs;
 use humantime::Duration as HumanDuration;
 
 use byteorder::{ByteOrder, NetworkEndian};
-use pcap_file::{pcap::PcapHeader, DataLink, PcapWriter};
+use pcap_file::{
+    DataLink,
+    pcap::{PcapHeader, PcapPacket, PcapWriter},
+};
 use rolling_stats::Stats;
 
-use crate::*;
 use crate::{
-    blocking::{BlockingError, BlockingOptions, BlockingReceive, BlockingTransmit},
     Power, Receive, ReceiveInfo, Rssi, Transmit,
+    blocking::{BlockingError, BlockingOptions, BlockingReceive, BlockingTransmit},
 };
 
 /// Basic operations supported by the helpers package
@@ -202,7 +204,7 @@ impl PcapOptions {
                 h.datalink = DataLink::IEEE802_15_4;
 
                 // Write header
-                let w = PcapWriter::with_header(h, f).expect("Error writing to PCAP file");
+                let w = PcapWriter::with_header(f, h).expect("Error writing to PCAP file");
                 Some(w)
             }
         };
@@ -248,13 +250,8 @@ where
                     .duration_since(SystemTime::UNIX_EPOCH)
                     .unwrap();
 
-                p.write(
-                    t.as_secs() as u32,
-                    t.as_nanos() as u32 % 1_000_000,
-                    &buff[0..n],
-                    n as u32,
-                )
-                .expect("Error writing pcap file");
+                p.write_packet(&PcapPacket::new(t, n as u32, &buff[0..n]))
+                    .expect("Error writing pcap file");
             }
 
             if !options.continuous {
@@ -444,6 +441,7 @@ where
         NetworkEndian::write_u32(&mut buff[0..], i as u32);
         let n = 4;
 
+        #[cfg(any(feature = "log", feature = "defmt"))]
         debug!("Sending message {}", i);
 
         // Send message
@@ -453,6 +451,7 @@ where
         let (n, info) = match radio.do_receive(&mut buff, options.blocking_options.clone()) {
             Ok(r) => r,
             Err(BlockingError::Timeout) => {
+                #[cfg(any(feature = "log", feature = "defmt"))]
                 debug!("Timeout awaiting response {}", i);
                 continue;
             }
@@ -461,6 +460,7 @@ where
 
         let receive_index = NetworkEndian::read_u32(&buff[0..n]);
         if receive_index != i {
+            #[cfg(any(feature = "log", feature = "defmt"))]
             debug!("Invalid receive index");
             continue;
         }
@@ -471,6 +471,7 @@ where
             false => None,
         };
 
+        #[cfg(any(feature = "log", feature = "defmt"))]
         debug!(
             "Received response {} with local rssi: {} and remote rssi: {:?}",
             receive_index,

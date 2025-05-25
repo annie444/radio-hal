@@ -2,22 +2,34 @@
 name = "radio"
 description = "Generic traits for embedded packet radio devices"
 repository = "https://github.com/annie444/radio-hal"
-authors = ["Ryan Kurte <ryankurte@gmail.com>", "Annie Ehler <annie.ehler.4@gmail.com"]
+authors = [
+  "Ryan Kurte <ryankurte@gmail.com>",
+  "Annie Ehler <annie.ehler.4@gmail.com",
+]
 license = "MIT"
 edition = "2024"
 version = "0.12.1"
 
 [package.metadata.docs.rs]
-features = [ "std", "nonblocking", "mock", "helpers", "log", "clap" ]
+features = ["std", "nonblocking", "mock", "helpers", "log", "clap"]
 
 [features]
-std = [ "dep:humantime" ]
-nonblocking = [ ]
-mock = [ "dep:embedded-hal-mock" ]
-helpers = [ "clap", "dep:humantime", "std", "dep:pcap-file", "dep:libc", "dep:byteorder", "dep:rolling-stats", "log" ]
-default = [ ]
-log = [ "dep:log" ]
-clap = [ "dep:clap" ]
+std = ["dep:humantime"]
+nonblocking = []
+mock = ["dep:embedded-hal-mock", "std", "log"]
+helpers = [
+  "clap",
+  "dep:humantime",
+  "std",
+  "dep:pcap-file",
+  "dep:libc",
+  "dep:byteorder",
+  "dep:rolling-stats",
+  "log",
+]
+default = []
+log = ["dep:log"]
+clap = ["dep:clap", "std"]
 
 [dependencies]
 embedded-hal = "1.0.0"
@@ -35,7 +47,7 @@ libc = { version = "0.2.172", optional = true }
 byteorder = { version = "1.5.0", optional = true }
 rolling-stats = { version = "0.7.0", optional = true }
 thiserror = { version = "2.0.12", optional = true }
-clap = { version = "4.5.38", optional = true, features = [ "derive" ] }
+clap = { version = "4.5.38", optional = true, features = ["derive"] }
 
 [dev-dependencies]
 anyhow = "1.0.98"

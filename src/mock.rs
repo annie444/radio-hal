@@ -6,8 +6,6 @@
 //! ## <https://github.com/rust-iot/radio-hal>
 //! ## Copyright 2020-2022 Ryan Kurte
 
-extern crate std;
-use std::convert::Infallible;
 use std::fmt::Debug;
 use std::vec::Vec;
 
@@ -52,8 +50,8 @@ where
         Self { inner }
     }
 
-    pub fn expect(&mut self, expectations: &[Transaction<St, Reg, Ch, Inf, Irq, E>]) {
-        self.inner.expect(expectations);
+    pub fn update_expectations(&mut self, expectations: &[Transaction<St, Reg, Ch, Inf, Irq, E>]) {
+        self.inner.update_expectations(expectations);
     }
 
     pub fn next(&mut self) -> Option<Transaction<St, Reg, Ch, Inf, Irq, E>> {
@@ -218,6 +216,15 @@ impl<St, Reg, Ch, Inf, Irq, E> Transaction<St, Reg, Ch, Inf, Irq, E> {
 
     /// Delay for a certain time
     pub fn delay_ns(ns: u32) -> Self {
+        Self {
+            request: Request::DelayNs(ns),
+            response: Response::Ok,
+        }
+    }
+
+    /// Delay for a certain time
+    pub fn delay_us(us: u32) -> Self {
+        let ns = us * 1000;
         Self {
             request: Request::DelayNs(ns),
             response: Response::Ok,
